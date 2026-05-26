@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contacto</title>
+    <style>
+      .form-box { border: 2px solid #000; padding: 16px; margin-bottom: 16px; max-width: 520px; }
+      .form-row { margin-bottom: 8px; }
+      
+      #contactsList { list-style: none; padding: 0; }
+      .contact-item {
+        border: 1px solid #ddd;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      .contact-item p { margin: 5px 0; }
+      .contact-name { font-weight: bold; font-size: 16px; color: #333; }
+      .contact-email { color: #0066cc; }
+      .contact-phone { color: #666; }
+      
+      .success-message {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        display: none;
+      }
+      .success-message.show { display: block; }
+    </style>
+  </head>
+  <body>
+    <h1>Contacto</h1>
+    <div class="form-box">
+      <section>
+        <h2>Login</h2>
+        <form id="loginForm">
+          <div class="form-row"><input name="username" placeholder="user" value="user" required /></div>
+          <div class="form-row"><input name="password" placeholder="pass" value="pass" required /></div>
+          <div class="form-row"><button type="submit">Login</button></div>
+        </form>
+        <div class="form-row"><button id="logoutBtn">Logout</button></div>
+      </section>
+
+      <section>
+        <h2>Crear Contacto</h2>
+        <div id="successMessage" class="success-message">✓ Usuario creado correctamente</div>
+        <form id="contactForm">
+          <div class="form-row"><input name="name" placeholder="Nombre" required /></div>
+          <div class="form-row"><input name="email" placeholder="correo@ejemplo.com" required /></div>
+          <div class="form-row"><input name="phone" placeholder="Teléfono" /></div>
+          <div class="form-row"><button type="submit">Crear</button></div>
+        </form>
+        <p id="createResult"></p>
+      </section>
+    </div>
+
+    <section>
+      <h2>Lista de Contactos</h2>
+      <button id="refreshBtn">Refrescar</button>
+      <ul id="contactsList"></ul>
+    </section>
+
+    <script>
+      async function postJSON(url, data) {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'same-origin'
+        });
+        return res.json();
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = { username: form.username.value, password: form.password.value };
+        const r = await postJSON('/api/auth/login', data);
+        alert(JSON.stringify(r));
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        const r = await postJSON('/api/auth/logout', {});
+        alert(JSON.stringify(r));
+      });
+
+      document.getElementById('contactForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = { name: form.name.value, email: form.email.value, phone: form.phone.value };
+        const r = await postJSON('/api/contacts', data);
+        
+        if (r.data) {
+          const msgEl = document.getElementById('successMessage');
+          msgEl.classList.add('show');
+          form.reset();
+          setTimeout(() => msgEl.classList.remove('show'), 3000);
+        }
+        
+        loadContacts();
+      });
+
+      document.getElementById('refreshBtn').addEventListener('click', loadContacts);
+
+      async function loadContacts() {
+        const res = await fetch('/api/contacts');
+        const response = await res.json();
+        const list = response.data;
+        const ul = document.getElementById('contactsList');
+        ul.innerHTML = '';
+        list.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'contact-item';
+          div.innerHTML = `
+            <p class="contact-name">${c.name}</p>
+            <p class="contact-email">📧 ${c.email}</p>
+            ${c.phone ? `<p class="contact-phone">📱 ${c.phone}</p>` : ''}
+          `;
+          ul.appendChild(div);
+        });
+      }
+
+      loadContacts();
+    </script>
+  </body>
+</html>
