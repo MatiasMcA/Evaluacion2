@@ -118,8 +118,8 @@
           div.className = 'contact-item';
           div.innerHTML = `
             <p class="contact-name">${c.name}</p>
-            <p class="contact-email">📧 ${c.email}</p>
-            ${c.phone ? `<p class="contact-phone">📱 ${c.phone}</p>` : ''}
+            <p class="contact-email">Correo: ${c.email}</p>
+            ${c.phone ? `<p class="contact-phone">Teléfono: ${c.phone}</p>` : ''}
           `;
           ul.appendChild(div);
         });

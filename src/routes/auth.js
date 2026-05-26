@@ -3,9 +3,9 @@ const router = express.Router();
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body || {};
-  // simple hardcoded credential for demo
+  
   if (username === 'user' && password === 'pass') {
-    // set a simple httpOnly cookie to represent session
+  
     res.cookie('session', '1', { httpOnly: true, sameSite: 'lax' });
     return res.json({ message: 'logged' });
   }
